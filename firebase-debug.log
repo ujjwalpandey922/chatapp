@@ -1,0 +1,14 @@
+[debug] [2024-07-04T15:34:24.563Z] ----------------------------------------------------------------------
+[debug] [2024-07-04T15:34:24.569Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Nishi Pandey\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2024-07-04T15:34:24.570Z] CLI Version:   13.13.0
+[debug] [2024-07-04T15:34:24.571Z] Platform:      win32
+[debug] [2024-07-04T15:34:24.571Z] Node Version:  v18.17.1
+[debug] [2024-07-04T15:34:24.601Z] Time:          Thu Jul 04 2024 21:04:24 GMT+0530 (India Standard Time)
+[debug] [2024-07-04T15:34:24.602Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-07-04T15:34:24.745Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-07-04T15:34:24.746Z] > authorizing via signed-in user (ujjwalpandey922@gmail.com)
+[debug] [2024-07-04T15:34:24.747Z] [iam] checking project chatapp-1cb68 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2024-07-04T15:34:24.753Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/chatapp-1cb68:testIamPermissions [none]
+[debug] [2024-07-04T15:34:24.753Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/chatapp-1cb68:testIamPermissions x-goog-quota-user=projects/chatapp-1cb68
+[debug] [2024-07-04T15:34:24.754Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/chatapp-1cb68:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]}
