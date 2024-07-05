@@ -1,7 +1,11 @@
 "use client";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { auth, db, googleProvider } from "@/util/firebase";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  UserCredential,
+} from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ref, set } from "firebase/database";
@@ -13,13 +17,7 @@ interface Credentials {
   password: string;
   confirmPassword: string;
 }
-export const saveUserToDatabase = (user: any) => {
-  set(ref(db, "users/" + user.uid), {
-    uid: user.uid,
-    email: user.email,
-    online: true,
-  });
-};
+
 // Signup component for user registration
 const Signup: React.FC = () => {
   // State for user credentials and errors
@@ -48,7 +46,13 @@ const Signup: React.FC = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-
+  const saveUserToDatabase = (user: any): void => {
+    set(ref(db, "users/" + user.uid), {
+      uid: user.uid,
+      email: user.email,
+      online: true,
+    });
+  };
   // Handle user signup
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();

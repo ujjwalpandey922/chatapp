@@ -4,9 +4,8 @@ import { auth, db, googleProvider } from "@/util/firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { onValue, ref, update } from "firebase/database";
+import { onValue, ref, set, update } from "firebase/database";
 import Link from "next/link";
-import { saveUserToDatabase } from "../signup/page";
 
 // Interface for user credentials
 interface Credentials {
@@ -116,7 +115,13 @@ const Login: React.FC = () => {
       }));
     }
   };
-
+  const saveUserToDatabase = (user: any): void => {
+    set(ref(db, "users/" + user.uid), {
+      uid: user.uid,
+      email: user.email,
+      online: true,
+    });
+  };
   // Handle user login with Google
   const handleLoginWithGoogle = async (e: FormEvent) => {
     e.preventDefault();
