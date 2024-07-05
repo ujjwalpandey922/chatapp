@@ -13,7 +13,13 @@ interface Credentials {
   password: string;
   confirmPassword: string;
 }
-
+export const saveUserToDatabase = (user: any) => {
+  set(ref(db, "users/" + user.uid), {
+    uid: user.uid,
+    email: user.email,
+    online: true,
+  });
+};
 // Signup component for user registration
 const Signup: React.FC = () => {
   // State for user credentials and errors
@@ -30,14 +36,6 @@ const Signup: React.FC = () => {
 
   // React.js router instance
   const router = useRouter();
-
-  const saveUserToDatabase = (user: any) => {
-    set(ref(db, "users/" + user.uid), {
-      uid: user.uid,
-      email: user.email,
-      online: true,
-    });
-  };
 
   // Handle input changes
   const handleOnchange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +81,7 @@ const Signup: React.FC = () => {
       );
       saveUserToDatabase(res.user);
       if (res.user) {
-        router.push("/");
+        router.push("/login");
       }
     } catch (error) {
       console.log("Signup ERROR", error);
@@ -220,6 +218,7 @@ const Signup: React.FC = () => {
           className="flex p-4 cursor-pointer hover:bg-slate-200 justify-center items-center rounded-xl gap-4 border  w-full my-5"
         >
           <Image
+            unoptimized
             width={30}
             height={30}
             alt="google"

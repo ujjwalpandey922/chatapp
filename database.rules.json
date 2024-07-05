@@ -1,0 +1,6 @@
+{
+  "rules": {
+    ".read": "now < auth != null",
+    ".write": "now < auth != null"
+  }
+}

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { onValue, ref, update } from "firebase/database";
 import Link from "next/link";
+import { saveUserToDatabase } from "../signup/page";
 
 // Interface for user credentials
 interface Credentials {
@@ -121,6 +122,7 @@ const Login: React.FC = () => {
     e.preventDefault();
     try {
       const res = await signInWithPopup(auth, googleProvider);
+      saveUserToDatabase(res.user);
       updateUserStatus(res.user, true);
       updateMessageStatus(res.user);
       if (res.user) {
@@ -226,6 +228,7 @@ const Login: React.FC = () => {
           className="flex p-4 cursor-pointer hover:bg-slate-200 justify-center items-center rounded-xl gap-4 border w-full my-5"
         >
           <Image
+            unoptimized
             width={30}
             height={30}
             alt="google"
