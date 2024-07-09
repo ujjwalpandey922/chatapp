@@ -13,18 +13,24 @@ const Display: React.FC<DisplayProps> = ({ selectedUser }) => {
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
-    // Fetch messages when selectedUser changes
-    if (selectedUser && auth?.currentUser?.uid !== selectedUser?.uid) {
-      // Get messages reference
+    if (
+      selectedUser &&
+      auth.currentUser &&
+      auth.currentUser.uid !== selectedUser.uid
+    ) {
+      const currentUserUid = auth.currentUser.uid;
+      // Both Message References
       const messagesRef = ref(
         db,
-        `messages/${auth?.currentUser?.uid}/${selectedUser?.uid}`
+        `messages/${currentUserUid}/${selectedUser.uid}`
       );
-      // Listen for messages
-      onValue(messagesRef, (snapshot) => {
-        // Check if there are any messages
+      const recipientMessagesRef = ref(
+        db,
+        `messages/${selectedUser.uid}/${currentUserUid}`
+      );
+      // Change the Displayed Messages
+      const handleMessageSnapshot = (snapshot: any) => {
         const data = snapshot.val();
-        console.log({ data });
         if (data) {
           const messagesList: MessageProps[] = Object.keys(data).map((key) => ({
             id: key,
@@ -34,44 +40,50 @@ const Display: React.FC<DisplayProps> = ({ selectedUser }) => {
         } else {
           setMessages([]);
         }
-      });
-
-      // Get recipient's messages
-      const recipientMessagesRef = ref(
-        db,
-        `messages/${selectedUser?.uid}/${auth?.currentUser?.uid}`
-      );
-      // Listen for recipient's messages
-      onValue(recipientMessagesRef, (snapshot) => {
-        // Check if there are any messages
+      };
+      // Function TO READ A Message when a user is clicked
+      const handleRecipientMessageSnapshot = (snapshot: any) => {
         const data = snapshot.val();
         if (data) {
-          // Loop through each message
           Object.keys(data).forEach((key) => {
-            // Check if the message has been read
             if (!data[key].read && data[key].delivered) {
               update(
                 ref(
                   db,
-                  `messages/${selectedUser?.uid}/${auth?.currentUser?.uid}/${key}`
+                  `messages/${selectedUser.uid}/${currentUserUid}/${key}`
                 ),
                 {
                   read: true,
+                  delivered: true,
                 }
               );
             }
           });
         }
-      });
+      };
+
+      // Listen for messages
+      const unsubscribeMessages = onValue(messagesRef, handleMessageSnapshot);
+      const unsubscribeRecipientMessages = onValue(
+        recipientMessagesRef,
+        handleRecipientMessageSnapshot
+      );
+
+      // Clean up the listeners on unmount or when selectedUser changes
+      return () => {
+        unsubscribeMessages();
+        unsubscribeRecipientMessages();
+      };
     }
   }, [selectedUser]);
 
   const sendMessage = () => {
     if (!selectedUser || !auth.currentUser) return;
-
+    // Message Reference
     const messageRef = push(
       ref(db, `messages/${auth.currentUser.uid}/${selectedUser.uid}`)
     );
+    // Set Message For User
     set(messageRef, {
       sender: auth.currentUser.uid,
       content: message,
@@ -79,10 +91,11 @@ const Display: React.FC<DisplayProps> = ({ selectedUser }) => {
       delivered: false,
       read: false,
     });
-
+    // Recipient Message Ref
     const recipientMessageRef = push(
       ref(db, `messages/${selectedUser.uid}/${auth.currentUser.uid}`)
     );
+    // Set Message For Recipient
     set(recipientMessageRef, {
       sender: auth.currentUser.uid,
       content: message,
@@ -97,7 +110,6 @@ const Display: React.FC<DisplayProps> = ({ selectedUser }) => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
   };
-  console.log({ selectedUser, messages });
   if (!selectedUser)
     return (
       <h1 className="text-center w-full text-3xl font-bold text-white">

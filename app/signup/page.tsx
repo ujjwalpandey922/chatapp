@@ -1,15 +1,11 @@
 "use client";
 import { useState, ChangeEvent, FormEvent } from "react";
-import { auth, db, googleProvider } from "@/util/firebase";
-import {
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  UserCredential,
-} from "firebase/auth";
+import { auth, googleProvider } from "@/util/firebase";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ref, set } from "firebase/database";
 import Link from "next/link";
+import { saveUserToDatabase, updateMessageStatus } from "@/util/functions";
 
 // Interface for user credentials
 interface Credentials {
@@ -46,16 +42,12 @@ const Signup: React.FC = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-  const saveUserToDatabase = (user: any): void => {
-    set(ref(db, "users/" + user.uid), {
-      uid: user.uid,
-      email: user.email,
-      online: true,
-    });
-  };
+
   // Handle user signup
   const handleSignup = async (e: FormEvent) => {
+    // Prevent form sub
     e.preventDefault();
+    // If Email Is Wrong
     if (!validateEmail(credentials.email)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -63,6 +55,7 @@ const Signup: React.FC = () => {
       }));
       return;
     }
+    // Password more than 6
     if (credentials.password.length < 6) {
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -70,6 +63,7 @@ const Signup: React.FC = () => {
       }));
       return;
     }
+    // both should be same
     if (credentials.password !== credentials.confirmPassword) {
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -83,21 +77,27 @@ const Signup: React.FC = () => {
         credentials.email,
         credentials.password
       );
+      // Saving the User And Adding the Listener for Message Update
       saveUserToDatabase(res.user);
+      updateMessageStatus(res.user);
+      // Nav to home page
       if (res.user) {
-        router.push("/login");
+        router.push("/");
       }
     } catch (error) {
       console.log("Signup ERROR", error);
     }
   };
 
-  // Handle user signup with Google
+  // Handle user sign up with Google
   const handleSignupWithGoogle = async (e: FormEvent) => {
     e.preventDefault();
     try {
       const res = await signInWithPopup(auth, googleProvider);
+      // Saving the User And Adding the Listener for Message Update
       saveUserToDatabase(res.user);
+      updateMessageStatus(res.user);
+      // Nav to home page
       if (res.user) {
         router.push("/");
       }

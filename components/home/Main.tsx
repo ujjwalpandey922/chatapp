@@ -5,6 +5,7 @@ import SideBar from "./SideBar";
 import { onValue, ref } from "firebase/database";
 import { db } from "@/util/firebase";
 import { UserProps } from "@/types/type";
+import { logoutUser } from "@/util/functions";
 
 const Main = () => {
   const [users, setUsers] = useState<UserProps[]>([]);
@@ -19,6 +20,16 @@ const Main = () => {
       }));
       setUsers(usersList);
     });
+    // LOGOUT USER WHEN TAB CLOSES
+    const handleBeforeUnload = async () => {
+      await logoutUser();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, []);
 
   return (

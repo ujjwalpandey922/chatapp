@@ -4,8 +4,9 @@ import { auth, db, googleProvider } from "@/util/firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { onValue, ref, set, update } from "firebase/database";
+import { ref, update } from "firebase/database";
 import Link from "next/link";
+import { saveUserToDatabase, updateMessageStatus } from "@/util/functions";
 
 // Interface for user credentials
 interface Credentials {
@@ -33,39 +34,6 @@ const Login: React.FC = () => {
       online: status,
     });
   };
-  const updateMessageStatus = (user: any) => {
-    // Get messages reference Of the current user
-    const messagesRef = ref(db, `messages/${user.uid}`);
-    onValue(messagesRef, (snapshot) => {
-      // Check if there are any messages
-      const data = snapshot.val();
-      if (data) {
-        // Loop through each message
-        Object.keys(data).forEach((recipientUid) => {
-          // Loop through each message ID
-          Object.keys(data[recipientUid]).forEach((messageId) => {
-            // Get the recipient's online status to change the message status
-            const isOnline = ref(db, `users/${recipientUid}/online`);
-            // Check if the message has been delivered
-            onValue(isOnline, (snapshot) => {
-              // Check if the recipient is online vaalue
-              const isOnline = snapshot.val();
-              // Check if the message has been delivered and the recipient is online
-              if (!data[recipientUid][messageId].delivered && isOnline) {
-                // Update the message status to delivered and the recipient's message status to delivered
-                update(
-                  ref(db, `messages/${user.uid}/${recipientUid}/${messageId}`),
-                  {
-                    delivered: true,
-                  }
-                );
-              }
-            });
-          });
-        });
-      }
-    });
-  };
   // Handle input changes
   const handleOnchange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -81,6 +49,7 @@ const Login: React.FC = () => {
   // Handle user login
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
+    // validate Email
     if (!validateEmail(credentials.email)) {
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -88,6 +57,7 @@ const Login: React.FC = () => {
       }));
       return;
     }
+    // Password Length should be more than 6
     if (credentials.password.length < 6) {
       setErrors((prevErrors) => ({
         ...prevErrors,
@@ -101,8 +71,10 @@ const Login: React.FC = () => {
         credentials.email,
         credentials.password
       );
+      // Change the status to online and add listener
       updateUserStatus(res.user, true);
       updateMessageStatus(res.user);
+      // move to home page
       if (res.user) {
         router.push("/");
       }
@@ -115,21 +87,16 @@ const Login: React.FC = () => {
       }));
     }
   };
-  const saveUserToDatabase = (user: any): void => {
-    set(ref(db, "users/" + user.uid), {
-      uid: user.uid,
-      email: user.email,
-      online: true,
-    });
-  };
+
   // Handle user login with Google
   const handleLoginWithGoogle = async (e: FormEvent) => {
     e.preventDefault();
     try {
       const res = await signInWithPopup(auth, googleProvider);
+      // Saving the User And Adding the Listener for Message Update
       saveUserToDatabase(res.user);
-      updateUserStatus(res.user, true);
       updateMessageStatus(res.user);
+      // Nav to home page
       if (res.user) {
         router.push("/");
       }

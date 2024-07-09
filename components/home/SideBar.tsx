@@ -1,7 +1,6 @@
 "use client";
 import { UserProps } from "@/types/type";
 import { auth } from "@/util/firebase";
-import { useEffect } from "react";
 
 type sidebarProps = {
   users: UserProps[];
